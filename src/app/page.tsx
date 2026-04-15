@@ -1,8 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { AuthButton } from "@/components/auth-button";
 
 type ProcessState = "idle" | "uploading" | "success" | "error";
 
@@ -26,9 +26,9 @@ const faqItems = [
       "No. Images are processed in memory during the request lifecycle and are not persisted by this MVP.",
   },
   {
-    question: "How long does processing take?",
+    question: "Can I buy extra usage later?",
     answer:
-      "Most images finish in a few seconds, depending on file size and Remove.bg response time.",
+      "Yes. The pricing model now includes monthly subscriptions and one-time usage packs, with PayPal planned as the checkout option later.",
   },
 ];
 
@@ -55,7 +55,7 @@ export default function Home() {
   const [error, setError] = useState<string>("");
 
   const isAuthenticated = Boolean(session?.user);
-  const displayName = session?.user?.name || session?.user?.email || "Signed in user";
+  const firstName = session?.user?.name?.split(" ")[0] || "there";
 
   const downloadName = useMemo(() => {
     if (!file) return "image-no-bg.png";
@@ -147,80 +147,64 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#e0f2fe,_#ffffff_50%)] text-slate-900">
       <section className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-6 py-10 lg:px-8">
-        <header className="flex flex-col gap-6 rounded-[32px] border border-white/70 bg-white/85 px-8 py-10 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur md:px-12 md:py-14">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <header className="grid gap-10 rounded-[32px] border border-white/70 bg-white/85 px-8 py-10 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur md:px-12 md:py-14 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+          <div className="space-y-6">
             <div className="inline-flex w-fit rounded-full border border-sky-200 bg-sky-50 px-4 py-1 text-sm font-medium text-sky-700">
               AI image background remover
             </div>
-            <div className="flex items-center gap-3 self-start sm:self-auto">
-              {isAuthenticated && (
-                <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm">
-                  {session?.user?.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={session.user.image}
-                      alt={displayName}
-                      className="h-8 w-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
-                      {displayName.slice(0, 1).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="max-w-[180px]">
-                    <p className="truncate font-medium text-slate-900">{displayName}</p>
-                    {session?.user?.email && <p className="truncate text-xs text-slate-500">{session.user.email}</p>}
-                  </div>
-                </div>
-              )}
-              <AuthButton isAuthenticated={isAuthenticated} />
+            <div className="space-y-4">
+              <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 md:text-6xl">
+                Remove image background instantly, then manage your usage like a real product.
+              </h1>
+              <p className="max-w-2xl text-lg leading-8 text-slate-600 md:text-xl">
+                Upload a JPG, PNG, or WEBP image, remove the background in seconds, and now test a full account flow with dashboard, pricing, billing, and usage history.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3 text-sm text-slate-600">
+              <span className="rounded-full bg-slate-100 px-4 py-2">Fast processing</span>
+              <span className="rounded-full bg-slate-100 px-4 py-2">No image storage</span>
+              <span className="rounded-full bg-slate-100 px-4 py-2">Transparent PNG output</span>
+              <span className="rounded-full bg-sky-100 px-4 py-2 text-sky-700">
+                {sessionStatus === "loading"
+                  ? "Checking sign-in status..."
+                  : isAuthenticated
+                    ? `Welcome back, ${firstName}`
+                    : "Sign in to explore the dashboard experience"}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/pricing" className="rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800">
+                View pricing
+              </Link>
+              <Link href={isAuthenticated ? "/account" : "/pricing"} className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-sky-400 hover:text-sky-700">
+                {isAuthenticated ? "Go to dashboard" : "See plans and credits"}
+              </Link>
             </div>
           </div>
 
-          <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 md:text-6xl">
-                  Remove image background instantly, online and without signup.
-                </h1>
-                <p className="max-w-2xl text-lg leading-8 text-slate-600 md:text-xl">
-                  Upload a JPG, PNG, or WEBP image, remove the background in seconds, and download a transparent PNG ready for ecommerce, profiles, logos, and more.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3 text-sm text-slate-600">
-                <span className="rounded-full bg-slate-100 px-4 py-2">Fast processing</span>
-                <span className="rounded-full bg-slate-100 px-4 py-2">No image storage</span>
-                <span className="rounded-full bg-slate-100 px-4 py-2">Transparent PNG output</span>
-                <span className="rounded-full bg-sky-100 px-4 py-2 text-sky-700">
-                  {sessionStatus === "loading"
-                    ? "Checking sign-in status..."
-                    : isAuthenticated
-                      ? "Signed in, ready for future account features"
-                      : "Sign in with Google to test the new login flow"}
-                </span>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-2xl shadow-slate-300/60">
-              <p className="text-sm uppercase tracking-[0.24em] text-sky-300">How it works</p>
-              <ol className="mt-6 space-y-5 text-sm text-slate-300">
-                {["Upload your image", "AI removes the background", "Download your PNG result"].map((step, index) => (
-                  <li key={step} className="flex items-start gap-4">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-400/20 text-sm font-semibold text-sky-200">
-                      {index + 1}
-                    </span>
-                    <div>
-                      <p className="font-medium text-white">{step}</p>
-                      <p className="mt-1 text-slate-400">
-                        {index === 0 && "Drag and drop or browse from your device."}
-                        {index === 1 && "We process it securely through Remove.bg."}
-                        {index === 2 && "Use the transparent image anywhere you need."}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
+          <div className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-2xl shadow-slate-300/60">
+            <p className="text-sm uppercase tracking-[0.24em] text-sky-300">How it works</p>
+            <ol className="mt-6 space-y-5 text-sm text-slate-300">
+              {[
+                "Upload your image",
+                "AI removes the background",
+                "Download and manage usage",
+              ].map((step, index) => (
+                <li key={step} className="flex items-start gap-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-400/20 text-sm font-semibold text-sky-200">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <p className="font-medium text-white">{step}</p>
+                    <p className="mt-1 text-slate-400">
+                      {index === 0 && "Drag and drop or browse from your device."}
+                      {index === 1 && "We process it securely through Remove.bg."}
+                      {index === 2 && "Track history, balance, and future billing inside your account."}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
           </div>
         </header>
 
@@ -283,8 +267,8 @@ export default function Home() {
               </div>
               <p className="text-slate-500">
                 {isAuthenticated
-                  ? "You are signed in. Next we can connect usage limits and payment to your account."
-                  : "Google sign-in is now available for testing, but uploads still work without login."}
+                  ? "You are signed in. Explore dashboard, usage history, and pricing pages after testing the core tool."
+                  : "Uploads still work without login, but account pages now simulate a complete product flow."}
               </p>
             </div>
           </div>
@@ -313,6 +297,32 @@ export default function Home() {
               <PreviewCard title="Background removed" imageUrl={resultPreview} emptyText="Your transparent result will appear here." transparent />
             </div>
           </div>
+        </section>
+
+        <section className="grid gap-6 md:grid-cols-3">
+          {[
+            {
+              title: "Dashboard",
+              body: "A logged-in user now has an overview page for account profile, plan, credits, and quick actions.",
+              href: "/account",
+            },
+            {
+              title: "Usage history",
+              body: "Mock processing history makes the product feel complete without building storage this round.",
+              href: "/account/history",
+            },
+            {
+              title: "Pricing and billing",
+              body: "Both monthly plans and one-time usage packs are now part of the product story, ready for future PayPal checkout.",
+              href: "/pricing",
+            },
+          ].map((item) => (
+            <Link key={item.title} href={item.href} className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+              <h3 className="text-xl font-semibold text-slate-950">{item.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-slate-600">{item.body}</p>
+              <p className="mt-5 text-sm font-medium text-sky-700">Open page →</p>
+            </Link>
+          ))}
         </section>
 
         <section className="grid gap-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:p-8 lg:grid-cols-2">
