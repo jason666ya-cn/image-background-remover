@@ -1,6 +1,8 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
+import { AuthButton } from "@/components/auth-button";
 
 type ProcessState = "idle" | "uploading" | "success" | "error";
 
@@ -43,6 +45,7 @@ function formatError(message?: string) {
 }
 
 export default function Home() {
+  const { data: session, status: sessionStatus } = useSession();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [dragging, setDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -50,6 +53,9 @@ export default function Home() {
   const [resultPreview, setResultPreview] = useState<string | null>(null);
   const [status, setStatus] = useState<ProcessState>("idle");
   const [error, setError] = useState<string>("");
+
+  const isAuthenticated = Boolean(session?.user);
+  const displayName = session?.user?.name || session?.user?.email || "Signed in user";
 
   const downloadName = useMemo(() => {
     if (!file) return "image-no-bg.png";
@@ -142,9 +148,35 @@ export default function Home() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#e0f2fe,_#ffffff_50%)] text-slate-900">
       <section className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-6 py-10 lg:px-8">
         <header className="flex flex-col gap-6 rounded-[32px] border border-white/70 bg-white/85 px-8 py-10 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur md:px-12 md:py-14">
-          <div className="inline-flex w-fit rounded-full border border-sky-200 bg-sky-50 px-4 py-1 text-sm font-medium text-sky-700">
-            AI image background remover
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="inline-flex w-fit rounded-full border border-sky-200 bg-sky-50 px-4 py-1 text-sm font-medium text-sky-700">
+              AI image background remover
+            </div>
+            <div className="flex items-center gap-3 self-start sm:self-auto">
+              {isAuthenticated && (
+                <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm">
+                  {session?.user?.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={session.user.image}
+                      alt={displayName}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
+                      {displayName.slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="max-w-[180px]">
+                    <p className="truncate font-medium text-slate-900">{displayName}</p>
+                    {session?.user?.email && <p className="truncate text-xs text-slate-500">{session.user.email}</p>}
+                  </div>
+                </div>
+              )}
+              <AuthButton isAuthenticated={isAuthenticated} />
+            </div>
           </div>
+
           <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
             <div className="space-y-6">
               <div className="space-y-4">
@@ -159,6 +191,13 @@ export default function Home() {
                 <span className="rounded-full bg-slate-100 px-4 py-2">Fast processing</span>
                 <span className="rounded-full bg-slate-100 px-4 py-2">No image storage</span>
                 <span className="rounded-full bg-slate-100 px-4 py-2">Transparent PNG output</span>
+                <span className="rounded-full bg-sky-100 px-4 py-2 text-sky-700">
+                  {sessionStatus === "loading"
+                    ? "Checking sign-in status..."
+                    : isAuthenticated
+                      ? "Signed in, ready for future account features"
+                      : "Sign in with Google to test the new login flow"}
+                </span>
               </div>
             </div>
 
@@ -235,11 +274,18 @@ export default function Home() {
               </div>
             </label>
 
-            <div className="mt-5 flex min-h-7 items-center text-sm">
-              {status === "uploading" && <p className="text-sky-700">Removing background, this usually takes a few seconds...</p>}
-              {status === "success" && <p className="text-emerald-700">Background removed successfully. Your PNG is ready.</p>}
-              {status === "error" && <p className="text-rose-700">{error}</p>}
-              {status === "idle" && <p className="text-slate-500">No signup required. We do not store your images in this MVP.</p>}
+            <div className="mt-5 space-y-2 text-sm">
+              <div className="flex min-h-7 items-center">
+                {status === "uploading" && <p className="text-sky-700">Removing background, this usually takes a few seconds...</p>}
+                {status === "success" && <p className="text-emerald-700">Background removed successfully. Your PNG is ready.</p>}
+                {status === "error" && <p className="text-rose-700">{error}</p>}
+                {status === "idle" && <p className="text-slate-500">No signup required. We do not store your images in this MVP.</p>}
+              </div>
+              <p className="text-slate-500">
+                {isAuthenticated
+                  ? "You are signed in. Next we can connect usage limits and payment to your account."
+                  : "Google sign-in is now available for testing, but uploads still work without login."}
+              </p>
             </div>
           </div>
 
