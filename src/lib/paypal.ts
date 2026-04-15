@@ -4,6 +4,13 @@ type PayPalAccessTokenResponse = {
   expires_in: number;
 };
 
+export type PayPalWebhookEvent = {
+  event_type?: string;
+  resource?: Record<string, unknown>;
+  summary?: string;
+  id?: string;
+};
+
 export const PAYPAL_BASE_URL = process.env.PAYPAL_BASE_URL || "https://api-m.sandbox.paypal.com";
 
 export const paypalCatalog = {
@@ -86,4 +93,55 @@ export async function getPayPalAccessToken() {
 
 export function getBaseAppUrl() {
   return process.env.AUTH_URL || "http://localhost:3000";
+}
+
+export async function verifyPayPalWebhook({
+  headers,
+  body,
+}: {
+  headers: Headers;
+  body: string;
+}) {
+  const webhookId = process.env.PAYPAL_WEBHOOK_ID;
+
+  if (!webhookId) {
+    return {
+      verified: false,
+      reason: "PAYPAL_WEBHOOK_ID is missing",
+    };
+  }
+
+  const token = await getPayPalAccessToken();
+
+  const response = await fetch(`${PAYPAL_BASE_URL}/v1/notifications/verify-webhook-signature`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token.access_token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      auth_algo: headers.get("paypal-auth-algo"),
+      cert_url: headers.get("paypal-cert-url"),
+      transmission_id: headers.get("paypal-transmission-id"),
+      transmission_sig: headers.get("paypal-transmission-sig"),
+      transmission_time: headers.get("paypal-transmission-time"),
+      webhook_id: webhookId,
+      webhook_event: JSON.parse(body),
+    }),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return {
+      verified: false,
+      reason: await response.text(),
+    };
+  }
+
+  const result = (await response.json()) as { verification_status?: string };
+
+  return {
+    verified: result.verification_status === "SUCCESS",
+    reason: result.verification_status || "UNKNOWN",
+  };
 }

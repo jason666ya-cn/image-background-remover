@@ -1,11 +1,28 @@
 import { NextRequest } from "next/server";
+import { addPaymentEvent } from "@/lib/mock-payment-state";
+import { verifyPayPalWebhook, type PayPalWebhookEvent } from "@/lib/paypal";
 
 export async function POST(request: NextRequest) {
-  const payload = await request.json().catch(() => null);
+  const rawBody = await request.text();
+  const payload = (JSON.parse(rawBody || "{}") as PayPalWebhookEvent) || {};
+
+  const verification = await verifyPayPalWebhook({
+    headers: request.headers,
+    body: rawBody,
+  });
+
+  addPaymentEvent({
+    id: payload.id || crypto.randomUUID(),
+    eventType: payload.event_type || "UNKNOWN",
+    summary: payload.summary || "PayPal webhook received",
+    verified: verification.verified,
+    createdAt: new Date().toISOString(),
+  });
 
   return Response.json({
     received: true,
-    note: "Webhook endpoint placeholder created. Next step is PayPal signature verification and credit/subscription state updates.",
-    eventType: payload?.event_type || null,
+    verified: verification.verified,
+    verificationReason: verification.reason,
+    eventType: payload.event_type || null,
   });
 }
