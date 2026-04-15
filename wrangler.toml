@@ -1,0 +1,15 @@
+name = "image-background-remover"
+compatibility_date = "2026-04-15"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[vars]
+AUTH_URL = "https://www.superai666.shop"
+AUTH_GOOGLE_ID = "539746933516-53nnlraupe0ki7b6qiovhp1h84c09sv5.apps.googleusercontent.com"
