@@ -13,3 +13,5 @@ binding = "ASSETS"
 [vars]
 AUTH_URL = "https://www.superai666.shop"
 AUTH_GOOGLE_ID = "539746933516-53nnlraupe0ki7b6qiovhp1h84c09sv5.apps.googleusercontent.com"
+PAYPAL_CLIENT_ID = "AVTw2tGLT2s48agiKULN2DUtuymEv9-i_T1xSoaOpnoUc8s1Jb6RJmX7CqpbbXY19u70wqNrGgg_IPxJ"
+PAYPAL_BASE_URL = "https://api-m.sandbox.paypal.com"

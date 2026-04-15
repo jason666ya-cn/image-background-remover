@@ -84,7 +84,7 @@ export const subscriptionPlans: PlanCard[] = [
       "100 AI background removals per month",
       "Personal dashboard and usage history",
       "Standard processing speed",
-      "PayPal checkout coming soon",
+      "PayPal Sandbox checkout enabled in test flow",
     ],
   },
   {
@@ -97,7 +97,7 @@ export const subscriptionPlans: PlanCard[] = [
       "500 AI background removals per month",
       "Priority processing",
       "Shared team-ready workflow later",
-      "PayPal subscription planned",
+      "PayPal subscription test flow ready",
     ],
   },
   {
@@ -150,7 +150,7 @@ export const usagePlans: PlanCard[] = [
     features: [
       "200 one-time image removals",
       "Best pay-as-you-go value",
-      "Useful before PayPal subscriptions go live",
+      "Useful alongside PayPal Sandbox testing",
     ],
   },
 ];

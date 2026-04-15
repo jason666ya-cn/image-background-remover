@@ -1,10 +1,21 @@
 import type { PlanCard as PlanCardType } from "@/lib/mock-data";
+import { PayPalButton } from "@/components/paypal-button";
 
 type Props = {
   plan: PlanCardType;
 };
 
+const paypalPlanMap: Record<string, { planId: string; paymentType: "one_time" | "subscription" }> = {
+  "Starter Monthly": { planId: "starterMonthly", paymentType: "subscription" },
+  "Growth Monthly": { planId: "growthMonthly", paymentType: "subscription" },
+  "Scale Monthly": { planId: "scaleMonthly", paymentType: "subscription" },
+  "10-image pack": { planId: "pack10", paymentType: "one_time" },
+  "50-image pack": { planId: "pack50", paymentType: "one_time" },
+  "200-image pack": { planId: "pack200", paymentType: "one_time" },
+};
+
 export function PlanCard({ plan }: Props) {
+  const paypalMeta = paypalPlanMap[plan.name];
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-start justify-between gap-4">
@@ -31,12 +42,16 @@ export function PlanCard({ plan }: Props) {
         ))}
       </ul>
 
-      <button
-        type="button"
-        className="mt-8 w-full rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
-      >
-        {plan.cta}
-      </button>
+      {paypalMeta ? (
+        <PayPalButton planId={paypalMeta.planId} paymentType={paypalMeta.paymentType} label={plan.cta} />
+      ) : (
+        <button
+          type="button"
+          className="mt-8 w-full rounded-full bg-slate-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+        >
+          {plan.cta}
+        </button>
+      )}
     </div>
   );
 }
